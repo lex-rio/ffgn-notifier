@@ -1,0 +1,36 @@
+{
+  "name": "ffgn-notifier",
+  "version": "1.0.0",
+  "description": "telegram bot that helps you to get filtered news from http://ffgn.com.ua/ ",
+  "main": "index.js",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "node-telegram-bot-api": "^0.30.0",
+    "request": "^2.83.0"
+  },
+  "devDependencies": {
+    "forever": "^0.15.3"
+  },
+  "scripts": {
+    "dev": "forever forever.json",
+    "start": "forever start forever.json",
+    "stop": "forever stop ffgn-notifier",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lex-rio/ffgn-notifier.git"
+  },
+  "keywords": [
+    "ffgn",
+    "futsal",
+    "news",
+    "bot"
+  ],
+  "author": "lex.rio@yandex.ru",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lex-rio/ffgn-notifier/issues"
+  },
+  "homepage": "https://github.com/lex-rio/ffgn-notifier#readme"
+}
