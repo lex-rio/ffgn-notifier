@@ -1,7 +1,13 @@
 /**
- * list of users key:{data}
+ *
+ * @type {{id: {history: {}, options: {}}}}
  */
-let users = {212565743: {}};
+let users = {
+    212565743: {
+        history: {},
+        options: {}
+    }
+};
 
 module.exports = {
 

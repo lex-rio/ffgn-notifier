@@ -13,6 +13,18 @@ const url = 'http://ffgn.com.ua/';
 bot.onText(/\/start/, (msg, match) => {
     //add new chat id to db with default filters
     users.save(msg.chat.id, {});
+    let history = [];
+
+    articles.getKeys().forEach(link => {
+        bot.sendMessage(msg.chat.id, link);
+        history.push(link);
+    });
+    users.getOne(msg.chat.id).history = history;
+});
+
+bot.on('callback_query', msg => {
+    console.log(msg);
+    // users.save(msg.chat.id, msg);
 });
 
 //in case of error, increase config.grabInterval to config.grabIntervalForError
@@ -31,13 +43,16 @@ let loop = (config, request, cheerio, url) => {
         //if there is new article, notify each user
         headers.each((index, el) => {
             // console.log(el.attribs.title);
-            if (el.attribs.title.toLowerCase().indexOf('анонс') !== -1
-                && articles.getKeys().indexOf(el.attribs.href) === -1) {
-                articles.save(el.attribs.href, {});
-                // console.log(users.getKeys());
-                users.getKeys().forEach(user => {
-                    bot.sendMessage(user, el.attribs.href);
-                });
+            if (el.attribs.title.toLowerCase().indexOf('анонс') !== -1) {
+                if (articles.getKeys().indexOf(el.attribs.href) === -1) {
+                    articles.save(el.attribs.href, {});
+                    // console.log(users.getKeys());
+                    users.getKeys().forEach(user => {
+                        bot.sendMessage(user, el.attribs.href);
+                    });
+                } else {
+                    // bot.sendMessage(config.admin, 'No updates');
+                }
             }
         });
 
@@ -47,5 +62,5 @@ let loop = (config, request, cheerio, url) => {
 
 loop(config, request, cheerio, url);
 
-bot.on('callback_query', msg => {});
+
 
