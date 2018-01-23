@@ -1,13 +1,14 @@
-/**
- *
- * @type {{id: {history: {}, options: {}}}}
- */
-let users = {
-    212565743: {
-        history: {},
-        options: {}
+let defaultUserObject = {
+    history: [],
+    options: {},
+    notify: function(bot, chatId, message) {
+        if (this.history.indexOf(message) === -1) {
+            bot.sendMessage(chatId, message);
+            this.history.push(message);
+        }
     }
-};
+},
+    users = {212565743: defaultUserObject};
 
 module.exports = {
 
@@ -15,9 +16,12 @@ module.exports = {
      *
      * @param id
      * @param obj
-     * @returns {boolean}
+     * @returns {*}
      */
-    save: (id, obj) => users[id] = obj,
+    save: (id, obj) => {
+        users[id] = Object.assign({}, defaultUserObject, obj);
+        return users[id];
+    },
 
     /**
      *
@@ -42,5 +46,13 @@ module.exports = {
      *
      * @returns {Array}
      */
-    getKeys: () => Object.keys(users)
+    getKeys: () => Object.keys(users),
+
+    /**
+     *
+     * @param callback
+     */
+    each: (callback) => {
+        Object.entries(users).forEach(([id, user]) => callback(id, user));
+    }
 };

@@ -11,15 +11,8 @@ const articles = require('./app/modules/articles.js');
 const url = 'http://ffgn.com.ua/';
 
 bot.onText(/\/start/, (msg, match) => {
-    //add new chat id to db with default filters
-    users.save(msg.chat.id, {});
-    let history = [];
-
-    articles.getKeys().forEach(link => {
-        bot.sendMessage(msg.chat.id, link);
-        history.push(link);
-    });
-    users.getOne(msg.chat.id).history = history;
+    let user = users.save(msg.chat.id, {});
+    articles.each((link, article) => user.notify(bot, msg.chat.id, link));
 });
 
 bot.on('callback_query', msg => {
@@ -28,13 +21,12 @@ bot.on('callback_query', msg => {
 });
 
 //in case of error, increase config.grabInterval to config.grabIntervalForError
-
 let loop = (config, request, cheerio, url) => {
     let delay = config.grabInterval;
     request(url, (error, response, body) => {
         if (error) {
             delay = config.grabIntervalForError;
-            bot.sendMessage(config.admin, "Произошла ошибка: " + error);
+            bot.sendMessage(config.admin, "Error: " + error);
             return false;
         }
         const $ = cheerio.load(body),
@@ -42,25 +34,15 @@ let loop = (config, request, cheerio, url) => {
 
         //if there is new article, notify each user
         headers.each((index, el) => {
-            // console.log(el.attribs.title);
-            if (el.attribs.title.toLowerCase().indexOf('анонс') !== -1) {
-                if (articles.getKeys().indexOf(el.attribs.href) === -1) {
-                    articles.save(el.attribs.href, {});
-                    // console.log(users.getKeys());
-                    users.getKeys().forEach(user => {
-                        bot.sendMessage(user, el.attribs.href);
-                    });
-                } else {
-                    // bot.sendMessage(config.admin, 'No updates');
-                }
+            if (el.attribs.title.toLowerCase().indexOf('анонс') !== -1 && !articles.getOne(el.attribs.href)) {
+                articles.save(el.attribs.href, {});
+                users.each((id, user) => user.notify(bot, id, el.attribs.href));
             }
         });
+        console.log(users.getAll());
 
     });
     setTimeout(loop, delay, config, request, cheerio, url);
 };
 
 loop(config, request, cheerio, url);
-
-
-

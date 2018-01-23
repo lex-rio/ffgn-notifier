@@ -36,5 +36,9 @@ module.exports = {
      *
      * @returns {Array}
      */
-    getKeys: () => Object.keys(articles)
+    getKeys: () => Object.keys(articles),
+
+    each: (callback) => {
+        Object.entries(articles).forEach(([id, article]) => callback(id, article));
+    }
 };
