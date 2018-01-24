@@ -10,8 +10,10 @@ const users = require('./app/modules/users.js');
 const articles = require('./app/modules/articles.js');
 const url = 'http://ffgn.com.ua/';
 
+users.save(212565743);
+
 bot.onText(/\/start/, (msg, match) => {
-    let user = users.save(msg.chat.id, {});
+    let user = users.save(msg.chat.id);
     articles.each((link, article) => user.notify(bot, msg.chat.id, link));
 });
 
@@ -39,8 +41,6 @@ let loop = (config, request, cheerio, url) => {
                 users.each((id, user) => user.notify(bot, id, el.attribs.href));
             }
         });
-        console.log(users.getAll());
-
     });
     setTimeout(loop, delay, config, request, cheerio, url);
 };

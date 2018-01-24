@@ -1,14 +1,23 @@
-let defaultUserObject = {
-    history: [],
-    options: {},
-    notify: function(bot, chatId, message) {
+class User {
+    constructor(id, options) {
+        this.id = id;
+        this.history = [];
+        this.options = Object.assign({teamsToWatch: []}, options);
+    }
+
+    notify (bot, chatId, message) {
         if (this.history.indexOf(message) === -1) {
             bot.sendMessage(chatId, message);
             this.history.push(message);
         }
     }
-},
-    users = {212565743: defaultUserObject};
+}
+
+/**
+ *
+ * @type {{}}
+ */
+let users = {};
 
 module.exports = {
 
@@ -18,8 +27,8 @@ module.exports = {
      * @param obj
      * @returns {*}
      */
-    save: (id, obj) => {
-        users[id] = Object.assign({}, defaultUserObject, obj);
+    save: (id, obj = {}) => {
+        users[id] = new User(id, obj);
         return users[id];
     },
 
@@ -35,12 +44,6 @@ module.exports = {
      * @returns {*|null}
      */
     getOne: (id) => users[id] || null,
-
-    /**
-     *
-     * @returns {Array}
-     */
-    getAllAsArray: () => Object.values(users),
 
     /**
      *
