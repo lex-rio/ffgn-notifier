@@ -1,0 +1,6 @@
+{
+  "uid": "ffgn-notifier",
+  "append": true,
+  "watch": true,
+  "script": "index.js"
+}

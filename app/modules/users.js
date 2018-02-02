@@ -5,11 +5,19 @@ class User {
         this.options = Object.assign({teamsToWatch: []}, options);
     }
 
-    notify (bot, chatId, message) {
+    notify (bot, message) {
         if (this.history.indexOf(message) === -1) {
-            bot.sendMessage(chatId, message);
+            bot.sendMessage(this.id, message);
             this.history.push(message);
         }
+    }
+
+    addTeam (team) {
+        this.options.teamsToWatch[0] = team.replace(/\s/g, '').toLowerCase();
+    }
+
+    getTeam () {
+        return this.options.teamsToWatch[0];
     }
 }
 
@@ -25,7 +33,7 @@ module.exports = {
      *
      * @param id
      * @param obj
-     * @returns {*}
+     * @returns User
      */
     save: (id, obj = {}) => {
         users[id] = new User(id, obj);
@@ -41,7 +49,7 @@ module.exports = {
     /**
      *
      * @param id
-     * @returns {*|null}
+     * @returns {User|null}
      */
     getOne: (id) => users[id] || null,
 
