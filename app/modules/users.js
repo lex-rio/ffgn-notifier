@@ -1,14 +1,27 @@
 class User {
-    constructor(id, options) {
+    constructor (id, options) {
         this.id = id;
-        this.history = [];
+        this.history = {};
         this.options = Object.assign({teamsToWatch: []}, options);
     }
 
-    notify (bot, message) {
-        if (this.history.indexOf(message) === -1) {
-            bot.sendMessage(this.id, message);
-            this.history.push(message);
+    notify (bot, announcement) {
+        let team = this.getTeam().replace(/\s/g, '').toLowerCase();
+        if (team && announcement.gamesStr.indexOf(team) !== -1) {
+            announcement.games.forEach(game => {
+                if (game.string.indexOf(team) !== -1 && this.history[game.pair] !== game.time) {
+                    let message = this.history[game.pair]
+                        ? "\nОбновили время:\n"
+                        : "\nНовый анонс:\n";
+                    bot.sendMessage(this.id, announcement.link + message + game.time + " " + game.pair);
+                    this.history[game.pair] = game.time;
+                }
+            });
+        } else {
+            bot.sendMessage(
+                this.id,
+                announcement.link + (team ? "\n" + this.getTeam() + " нет в анонсе, возможно вы задали неверное имя" : '')
+            );
         }
     }
 
@@ -42,9 +55,9 @@ module.exports = {
 
     /**
      *
-     * @returns {{}}
+     * @returns User[]
      */
-    getAll: () => users,
+    getAll: () => Object.values(users),
 
     /**
      *

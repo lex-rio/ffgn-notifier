@@ -9,13 +9,13 @@ const bot = new TelegramBot(config.botToken, {polling: true});
 const users = require('./app/modules/users.js');
 const baseUrl = 'http://ffgn.com.ua/';
 
-let lastAnnouncement = {link: '', games: []};
+let lastAnnouncement = {link: '', games: [], gamesStr: ''};
 
 users.save(config.admin, {teamsToWatch: ['globallogic']});
 
-bot.onText(/\/start/, msg => users.save(msg.chat.id).notify(bot, "Последний анонс: " + lastAnnouncement.link));
-
-bot.onText(/\/team (.+)/, (msg, match) => users.getOne(msg.chat.id).addTeam(match[1]));
+bot.onText(/\/start (.+)/, (msg, match) =>
+    users.save(msg.chat.id, {teamsToWatch: [match[1]]}).notify(bot, lastAnnouncement)
+);
 
 bot.onText(/\/test/, msg => bot.sendMessage(msg.chat.id, "I'm working here"));
 
@@ -31,37 +31,22 @@ let loop = (config, request, cheerio, baseUrl) => {
         const $ = cheerio.load(body),
             headers = $("#content .article_col:first-child article.post .entry-title a");
 
-        let lastAnnouncementArticle;
-
         for (let i=0; i<headers.length; i++) {
             if (headers[i].attribs.title.toLowerCase().indexOf('анонс') !== -1) {
-                lastAnnouncementArticle = headers[i];
+                downloadAnnouncement(headers[i].attribs.href, games => {
+                    let gamesStr = JSON.stringify(games);
+                    if (gamesStr !== lastAnnouncement.gamesStr) {
+                        lastAnnouncement.link = headers[i].attribs.href;
+                        lastAnnouncement.games = games;
+                        lastAnnouncement.gamesStr = gamesStr;
+                        users.getAll().forEach(user => user.notify(bot, lastAnnouncement));
+                    }
+                });
                 break;
             }
         }
 
-        if (lastAnnouncementArticle.attribs.href === lastAnnouncement.link) {
-            return false;
-        }
 
-        downloadAnnouncement(lastAnnouncementArticle.attribs.href, games => {
-            lastAnnouncement.games = games;
-            lastAnnouncement.link = lastAnnouncementArticle.attribs.href;
-
-            users.each((id, user) => {
-                /** @var User user */
-                let team = user.getTeam();
-                if (team) {
-                    games.forEach(game => {
-                        if (game.string.indexOf(team) !== -1) {
-                            user.notify(bot, game.time + ' ' + game.pair + ' ' + lastAnnouncement.link);
-                        }
-                    });
-                } else {
-                    user.notify(bot, lastAnnouncement.link);
-                }
-            });
-        });
     });
     setTimeout(loop, delay, config, request, cheerio, baseUrl);
 };
@@ -69,22 +54,29 @@ let loop = (config, request, cheerio, baseUrl) => {
 let downloadAnnouncement = (url, callback) => {
     request(url, (error, response, body) => {
         if (!error) {
-            const $ = cheerio.load(body);
-            const rows = $(".entry-content table tr");
+            const $ = cheerio.load(body),
+                rows = $(".entry-content table tr");
 
-            let games = [];
+            let games = [],
+                weekDay,
+                date;
 
             rows.each((i, el) => {
-                let matchInfo = $(el).children('td'),
+                const matchInfo = $(el).children('td'),
                     hours = $(matchInfo[0]).text(),
                     minutes = $(matchInfo[1]).text(),
-                    pair = $(matchInfo[2]).text() + " vs " + $(matchInfo[3]).text();
+                    team1 = $(matchInfo[2]).text(),
+                    team2 = $(matchInfo[3]).text();
+
+                if ((!hours || !minutes) && team1) {
+                    weekDay = team1;
+                }
 
                 if (hours && minutes) {
                     games.push({
-                        'time': hours + ':' + minutes,
-                        'pair': pair,
-                        'string': pair.replace(/\s/g, '').toLowerCase()
+                        'time': weekDay + ' ' + hours + ':' + minutes,
+                        'pair': team1 + " vs " + team2,
+                        'string': (team1 + "vs" + team2).replace(/\s/g, '').toLowerCase()
                     });
                 }
             });
