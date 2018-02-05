@@ -1,8 +1,13 @@
+let Datastore = require('nedb'),
+    db = new Datastore({filename : 'users', autoload: true});
+
+db.ensureIndex({fieldName: 'id', unique: true});
+
 class User {
-    constructor (id, options) {
+    constructor (id, teamsToWatch, history = {}) {
         this.id = id;
-        this.history = {};
-        this.options = Object.assign({teamsToWatch: []}, options);
+        this.teamsToWatch = teamsToWatch;
+        this.history = history;
     }
 
     notify (bot, announcement) {
@@ -15,6 +20,7 @@ class User {
                         : "\nНовый анонс:\n";
                     bot.sendMessage(this.id, announcement.link + message + game.time + " " + game.pair);
                     this.history[game.pair] = game.time;
+                    db.update({id: this.id}, {$set: {history: this.history}});
                 }
             });
         } else {
@@ -26,11 +32,11 @@ class User {
     }
 
     addTeam (team) {
-        this.options.teamsToWatch[0] = team.replace(/\s/g, '').toLowerCase();
+        this.teamsToWatch[0] = team;
     }
 
     getTeam () {
-        return this.options.teamsToWatch[0];
+        return this.teamsToWatch[0];
     }
 }
 
@@ -42,14 +48,22 @@ let users = {};
 
 module.exports = {
 
+    load: callback => {
+        db.find({}).exec((err, docs) => {
+            docs.forEach(doc => users[doc.id] = new User(doc.id, doc.teamsToWatch, doc.history));
+            callback();
+        });
+    },
+
     /**
      *
      * @param id
-     * @param obj
-     * @returns User
+     * @param team
+     * @returns {User}
      */
-    save: (id, obj = {}) => {
-        users[id] = new User(id, obj);
+    save: (id, team = null) => {
+        users[id] = new User(id, [team]);
+        db.insert(users[id]);
         return users[id];
     },
 
@@ -65,18 +79,4 @@ module.exports = {
      * @returns {User|null}
      */
     getOne: (id) => users[id] || null,
-
-    /**
-     *
-     * @returns {Array}
-     */
-    getKeys: () => Object.keys(users),
-
-    /**
-     *
-     * @param callback
-     */
-    each: (callback) => {
-        Object.entries(users).forEach(([id, user]) => callback(id, user));
-    }
 };

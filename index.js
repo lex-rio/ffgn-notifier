@@ -11,13 +11,13 @@ const baseUrl = 'http://ffgn.com.ua/';
 
 let lastAnnouncement = {link: '', games: [], gamesStr: ''};
 
-users.save(config.admin, {teamsToWatch: ['globallogic']});
+users.load(_ => loop(config, request, cheerio, baseUrl));
 
-bot.onText(/\/start (.+)/, (msg, match) =>
-    users.save(msg.chat.id, {teamsToWatch: [match[1]]}).notify(bot, lastAnnouncement)
-);
+// users.save(config.admin, 'globallogic');
 
-bot.onText(/\/test/, msg => bot.sendMessage(msg.chat.id, "I'm working here"));
+bot.onText(/\/team (.+)/, (msg, match) => {
+    users.save(msg.chat.id, match[1]).notify(bot, lastAnnouncement)
+});
 
 //in case of error, increase config.grabInterval to config.grabIntervalForError
 let loop = (config, request, cheerio, baseUrl) => {
@@ -31,7 +31,7 @@ let loop = (config, request, cheerio, baseUrl) => {
         const $ = cheerio.load(body),
             headers = $("#content .article_col:first-child article.post .entry-title a");
 
-        for (let i=0; i<headers.length; i++) {
+        for (let i=0, l=headers.length; i<l; i++) {
             if (headers[i].attribs.title.toLowerCase().indexOf('анонс') !== -1) {
                 downloadAnnouncement(headers[i].attribs.href, games => {
                     let gamesStr = JSON.stringify(games);
@@ -45,8 +45,6 @@ let loop = (config, request, cheerio, baseUrl) => {
                 break;
             }
         }
-
-
     });
     setTimeout(loop, delay, config, request, cheerio, baseUrl);
 };
@@ -58,8 +56,7 @@ let downloadAnnouncement = (url, callback) => {
                 rows = $(".entry-content table tr");
 
             let games = [],
-                weekDay,
-                date;
+                weekDay;
 
             rows.each((i, el) => {
                 const matchInfo = $(el).children('td'),
@@ -84,5 +81,3 @@ let downloadAnnouncement = (url, callback) => {
         }
     });
 };
-
-loop(config, request, cheerio, baseUrl);
