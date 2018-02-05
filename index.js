@@ -15,9 +15,9 @@ users.load(_ => loop(config, request, cheerio, baseUrl));
 
 // users.save(config.admin, 'globallogic');
 
-bot.onText(/\/team (.+)/, (msg, match) => {
-    users.save(msg.chat.id, match[1]).notify(bot, lastAnnouncement)
-});
+bot.onText(/\/start/, msg => bot.sendMessage(msg.chat.id, "Чтобы подписаться на анонсы сайта http://ffgn.com.ua/, введите /team <название команды>"));
+
+bot.onText(/\/team (.+)/, (msg, match) => users.save(msg.chat.id, match[1]).notify(bot, lastAnnouncement));
 
 //in case of error, increase config.grabInterval to config.grabIntervalForError
 let loop = (config, request, cheerio, baseUrl) => {
