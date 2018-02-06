@@ -1,7 +1,7 @@
 let Datastore = require('nedb'),
     db = new Datastore({filename : 'users', autoload: true});
 
-db.ensureIndex({fieldName: 'id', unique: true});
+// db.ensureIndex({fieldName: 'id', unique: true});
 
 class User {
     constructor (id, teamsToWatch, history = {}) {
