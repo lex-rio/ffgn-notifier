@@ -32,11 +32,17 @@ class User {
     }
 
     addTeam (team) {
-        this.teamsToWatch[0] = team;
+        this.teamsToWatch.push(team);
+        db.update({id: this.id}, {$set: {teamsToWatch: this.teamsToWatch}});
+        return this;
     }
 
     getTeam () {
-        return this.teamsToWatch[0];
+        return this.teamsToWatch[0] || '';
+    }
+
+    getTeams () {
+        return this.teamsToWatch;
     }
 }
 

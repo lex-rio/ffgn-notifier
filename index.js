@@ -13,11 +13,19 @@ let lastAnnouncement = {link: '', games: [], gamesStr: ''};
 
 users.load(_ => loop(config, request, cheerio, baseUrl));
 
-// users.save(config.admin, 'globallogic');
+bot.onText(/\/start/, msg => {
+    users.save(msg.chat.id);
+    bot.sendMessage(msg.chat.id, "Вы подписаны на анонсы сайта http://ffgn.com.ua/, " +
+        "\nчтоб подписаться на анонсы одной команды - введите /team <название команды>" +
+        "\nэто Open source проект, желающие могут приобщиться https://github.com/lex-rio/ffgn-notifier");
+});
 
-bot.onText(/\/start/, msg => bot.sendMessage(msg.chat.id, "Чтобы подписаться на анонсы сайта http://ffgn.com.ua/, введите /team <название команды>"));
+bot.onText(/\/team (.+)/, (msg, match) =>
+    users.getOne(msg.chat.id)
+        .addTeam(match[1])
+        .notify(bot, lastAnnouncement));
 
-bot.onText(/\/team (.+)/, (msg, match) => users.save(msg.chat.id, match[1]).notify(bot, lastAnnouncement));
+bot.onText(/\/myteams/, msg => bot.sendMessage(msg.chat.id, users.getOne(msg.chat.id).getTeams().join(', ')));
 
 //in case of error, increase config.grabInterval to config.grabIntervalForError
 let loop = (config, request, cheerio, baseUrl) => {
