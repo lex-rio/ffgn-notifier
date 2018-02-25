@@ -1,5 +1,5 @@
 "use strict";
-const config = require('./config.js');
+const config = require('./config.example.js');
 //libs
 const TelegramBot = require('node-telegram-bot-api');
 const request = require("request");
