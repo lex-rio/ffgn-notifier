@@ -35,6 +35,8 @@ bot.onText(/\/team (.+)/, (msg, match) => {
 
 bot.onText(/\/myteams/, msg => bot.sendMessage(msg.chat.id, users.getOne(msg.chat.id).getTeams().join(', ')));
 
+bot.onText(/\/debuguser/, msg => bot.sendMessage(msg.chat.id, JSON.stringify(users.getOne(msg.chat.id))));
+
 //in case of error, increase config.grabInterval to config.grabIntervalForError
 let loop = (config, request, cheerio, baseUrl) => {
     let delay = config.grabInterval;
