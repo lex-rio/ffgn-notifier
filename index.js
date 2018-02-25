@@ -17,13 +17,16 @@ bot.onText(/\/start/, msg => {
     users.save(msg.chat.id);
     bot.sendMessage(msg.chat.id, "Вы подписаны на анонсы сайта http://ffgn.com.ua/, " +
         "\nчтоб подписаться на анонсы одной команды - введите /team <название команды>" +
+        "\nчтоб вывести список команд на которые вы подписаны - введите /myteams" +
         "\nэто Open source проект, желающие могут приобщиться https://github.com/lex-rio/ffgn-notifier");
 });
 
-bot.onText(/\/team (.+)/, (msg, match) =>
-    users.getOne(msg.chat.id)
-        .addTeam(match[1])
-        .notify(bot, lastAnnouncement));
+bot.onText(/\/team (.+)/, (msg, match) => {
+    let user = users.getOne(msg.chat.id) || users.save(msg.chat.id);
+    user.addTeam(match[1])
+        .notify(bot, lastAnnouncement)
+});
+
 
 bot.onText(/\/myteams/, msg => bot.sendMessage(msg.chat.id, users.getOne(msg.chat.id).getTeams().join(', ')));
 
