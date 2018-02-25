@@ -5,7 +5,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const request = require("request");
 const cheerio = require("cheerio");
 
-const bot = new TelegramBot(config.botToken, {polling: true});
+const bot = new TelegramBot(config.botToken);
 const users = require('./app/modules/users.js');
 const baseUrl = 'http://ffgn.com.ua/';
 
