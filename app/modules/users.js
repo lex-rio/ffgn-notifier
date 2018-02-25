@@ -26,7 +26,7 @@ class User {
         } else {
             bot.sendMessage(
                 this.id,
-                announcement.link + (team ? "\n" + this.getTeam() + " нет в анонсе, возможно вы задали неверное имя" : '')
+                announcement.link + (team ? "\n" + this.getTeam() + " нет в анонсе, возможно вы задали неверное имя, da" : '')
             );
         }
     }
