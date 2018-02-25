@@ -5,13 +5,18 @@ const TelegramBot = require('node-telegram-bot-api');
 const request = require("request");
 const cheerio = require("cheerio");
 
-const bot = new TelegramBot(config.botToken, {polling: true});
+const bot = new TelegramBot(config.botToken, {webHook: {port: process.env.PORT}});
 const users = require('./app/modules/users.js');
 const baseUrl = 'http://ffgn.com.ua/';
+const url = process.env.APP_URL || 'https://ffgn.herokuapp.com:443';
+
+bot.setWebHook(`${url}/bot${config.botToken}`);
 
 let lastAnnouncement = {link: '', games: [], gamesStr: ''};
 
 users.load(_ => loop(config, request, cheerio, baseUrl));
+
+bot.onText(/\/ping/, msg => bot.sendMessage(msg.chat.id, 'I am alive on Heroku!'));
 
 bot.onText(/\/start/, msg => {
     users.save(msg.chat.id);
