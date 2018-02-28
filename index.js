@@ -1,5 +1,6 @@
 "use strict";
-const config = require('./config.heroku.js');
+const env = '.heroku';
+const config = require('./config' + env + '.js');
 //libs
 const TelegramBot = require('node-telegram-bot-api');
 const request = require("request");
@@ -15,7 +16,7 @@ let lastAnnouncement = {link: '', games: [], gamesStr: ''};
 
 users.load(_ => loop(config, request, cheerio, baseUrl));
 
-bot.onText(/\/ping/, msg => bot.sendMessage(msg.chat.id, 'I am alive on Heroku!'));
+bot.onText(/\/ping/, msg => bot.sendMessage(msg.chat.id, 'I am alive on ' + env));
 
 bot.onText(/\/start/, msg => {
     users.save(msg.chat.id);
