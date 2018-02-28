@@ -1,7 +1,9 @@
 let config = {
-    botToken: process.env.botToken || '',
-    grabInterval: process.env.grabInterval || 60000,
-    grabIntervalForError: process.env.grabIntervalForError || 600000,
+    botToken: '',
+    grabInterval: 60000,
+    grabIntervalForError: 600000,
+    appUrl: 'https://myapp:<port>',
+    appPort: 443,
     admin: 212565743
 };
 module.exports = config;

@@ -1,16 +1,15 @@
 "use strict";
-const config = require('./config.example.js');
+const config = require('./config.heroku.js');
 //libs
 const TelegramBot = require('node-telegram-bot-api');
 const request = require("request");
 const cheerio = require("cheerio");
 
-const bot = new TelegramBot(config.botToken, {webHook: {port: process.env.PORT}});
+const bot = new TelegramBot(config.botToken, {webHook: {port: config.appPort}});
 const users = require('./app/modules/users.js');
 const baseUrl = 'http://ffgn.com.ua/';
-const url = process.env.APP_URL || 'https://ffgn.herokuapp.com:443';
 
-bot.setWebHook(`${url}/bot${config.botToken}`);
+bot.setWebHook(`${config.appUrl}/bot${config.botToken}`);
 
 let lastAnnouncement = {link: '', games: [], gamesStr: ''};
 
